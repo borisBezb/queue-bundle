@@ -1,0 +1,26 @@
+{
+    "name": "bezb/queue-bundle",
+    "description": "Queue Bundle for Symfony 4",
+    "type": "symfony-bundle",
+    "require": {
+        "symfony/framework-bundle": "^4.0",
+        "bezb/redis-bundle": "dev-master",
+        "doctrine/orm": "^2.6",
+        "doctrine/doctrine-bundle": "^1.9"
+    },
+    "autoload": {
+        "psr-4": { "Bezb\\QueueBundle\\": "" }
+    },
+    "authors": [
+        {
+            "name": "borisbezb",
+            "email": "wc3inside@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "git@github.com:borisBezb/redis-bundle.git"
+        }
+    ]
+}
