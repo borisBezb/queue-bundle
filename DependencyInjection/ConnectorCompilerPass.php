@@ -22,7 +22,7 @@ class ConnectorCompilerPass implements CompilerPassInterface
         foreach ($connectorServices as $serviceId => $tagAttributes) {
             $container
                 ->getDefinition(QueueManager::class)
-                ->addMethodCall('addConnection', [$container->getDefinition($serviceId)]);
+                ->addMethodCall('addConnector', [$container->getDefinition($serviceId)]);
         }
     }
 }
