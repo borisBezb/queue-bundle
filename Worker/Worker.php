@@ -60,7 +60,8 @@ class Worker
         while ($this->isRunning) {
             // Do not take next tasks while do not get free workers limit
             while (count($this->processes) >= $options->getProcessLimit()) {
-                \usleep(10000);
+                usleep(10000);
+                pcntl_signal_dispatch();
             }
 
             $job = $this->manager->getConnection($connectionName)->pop($queueName);

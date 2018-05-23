@@ -71,7 +71,13 @@ class RedisQueue implements QueueInterface
             return null;
         }
 
-        return $this->serializer->unserialize($rawJob);
+        try {
+            $job = $this->serializer->unserialize($rawJob);
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        return $job;
     }
 
     /**
