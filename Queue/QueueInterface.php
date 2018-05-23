@@ -15,11 +15,11 @@ interface QueueInterface
      * @param null|string $queue
      * @return mixed
      */
-    public function push(JobInterface $job, $data = null, ?string $queue);
+    public function push(JobInterface $job, $data = null, ?string $queue = null);
 
     /**
      * @param null|string $queue
      * @return mixed
      */
-    public function pop(?string $queue): JobInterface;
+    public function pop(?string $queue = null): ?JobInterface;
 }

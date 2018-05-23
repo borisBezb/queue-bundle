@@ -35,6 +35,11 @@ class Worker
     protected $processes = [];
 
     /**
+     * @var bool
+     */
+    protected $isRunning = true;
+
+    /**
      * Worker constructor.
      * @param QueueManager $manager
      * @param QueueHandler $handler
@@ -50,12 +55,12 @@ class Worker
     public function runDaemon($connectionName, $queueName, WorkerOptions $options)
     {
         pcntl_signal(SIGCHLD, [$this, 'signalHandler']);
+        pcntl_signal(SIGINT, [$this, 'signalHandler']);
 
-        while (true) {
-
+        while ($this->isRunning) {
             // Do not take next tasks while do not get free workers limit
             while (count($this->processes) >= $options->getProcessLimit()) {
-                usleep(10000);
+                \usleep(10000);
             }
 
             $job = $this->manager->getConnection($connectionName)->pop($queueName);
@@ -64,17 +69,20 @@ class Worker
                 // Close active external connections before forking, to prevent their closing when child exits
                 $this->closeConnections($connectionName);
 
-                $this->executeJob($job, $options);
+                $this->executeJob($job);
             } else {
-
                 // Sleep if have not got a new job
                 sleep($options->getSleep());
             }
 
+            pcntl_signal_dispatch();
         }
     }
 
-    public function executeJob(JobInterface $job, WorkerOptions $options)
+    /**
+     * @param JobInterface $job
+     */
+    public function executeJob(JobInterface $job)
     {
         $pid = pcntl_fork();
 
@@ -89,7 +97,7 @@ class Worker
                 var_dump($e->getMessage());
             }
 
-            exit(0);
+            exit();
         }
     }
 
@@ -103,12 +111,18 @@ class Worker
         }
 
         // Also close active queue connection by the same reason
-        $this->manager->close($connectionName);
+        $this->manager->closeConnection($connectionName);
     }
 
+    /**
+     * @param $signal
+     */
     protected function signalHandler($signal)
     {
-        if (SIGCHLD === $signal) {
+        if (SIGINT === $signal) {
+            $this->isRunning = false;
+            $this->waitChildrenProcesses();
+        } elseif (SIGCHLD === $signal) {
             $this->waitChildrenProcesses();
         }
     }

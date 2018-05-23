@@ -3,6 +3,7 @@
 namespace Bezb\QueueBundle\DependencyInjection;
 
 use Bezb\QueueBundle\QueueManager;
+use Bezb\QueueBundle\Serializer\DoctrineSerializer;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -28,7 +29,8 @@ class BezbQueueExtension extends Extension
 
         $manager = $container->getDefinition(QueueManager::class);
         $manager
-            ->addArgument($config['default'])
+            ->addArgument($container->getDefinition(DoctrineSerializer::class))
+            ->addArgument($config['default_connection'])
             ->addArgument($config['connections'])
         ;
     }

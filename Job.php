@@ -79,25 +79,4 @@ class Job implements JobInterface
 
         return $this;
     }
-
-    public function __sleep()
-    {
-        $properties = (new \ReflectionClass($this))->getProperties();
-
-        foreach ($properties as $property) {
-            $property->setAccessible(true);
-
-            $value = $property->getValue($this);
-
-            var_dump($value);
-        }
-
-
-        exit;
-    }
-
-    public function __wakeup()
-    {
-        // TODO: Implement __wakeup() method.
-    }
 }

@@ -55,7 +55,7 @@ class QueueManager
      * @return QueueInterface
      * @throws \Exception
      */
-    public function getConnection(?string $connection): QueueInterface
+    public function getConnection(?string $connection = ''): QueueInterface
     {
         if (!$connection) {
             $connection = $this->default;
@@ -110,7 +110,10 @@ class QueueManager
         $queue->push($job, null, $job->getQueue());
     }
 
-    public function close($connection)
+    /**
+     * @param $connection
+     */
+    public function closeConnection($connection)
     {
         [$driver, $name] = explode(':', $connection);
 

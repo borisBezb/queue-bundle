@@ -44,7 +44,7 @@ class RedisConnector implements ConnectorInterface
     {
         $connection = $this->redisManager->getConnection($config['connection']);
 
-        return new RedisQueue($connection, $config['default']);
+        return new RedisQueue($config, $this->redisManager, $serializer);
     }
 
     /**

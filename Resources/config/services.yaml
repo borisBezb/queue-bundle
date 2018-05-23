@@ -10,3 +10,6 @@ services:
     Bezb\QueueBundle\:
         resource: '../../*'
         exclude: '../../{Resources}'
+
+    Bezb\QueueBundle\Worker\Worker:
+        arguments: ['@Bezb\QueueBundle\QueueManager', '@Bezb\QueueBundle\QueueHandler', !tagged queue.worker.connection_keeper]

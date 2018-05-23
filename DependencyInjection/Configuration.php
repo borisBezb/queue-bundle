@@ -19,7 +19,7 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $treeBuilder->root('bezb_queue')
             ->children()
-                ->scalarNode('default')
+                ->scalarNode('default_connection')
                     ->isRequired()
                 ->end()
                 ->arrayNode('connections')
@@ -29,7 +29,7 @@ class Configuration implements ConfigurationInterface
                             ->arrayPrototype()
                                 ->children()
                                     ->scalarNode('connection')->end()
-                                    ->scalarNode('default')->end()
+                                    ->scalarNode('default_queue')->end()
                                 ->end()
                             ->end()
                         ->end()
