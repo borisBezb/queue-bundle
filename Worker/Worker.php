@@ -2,11 +2,16 @@
 
 namespace Bezb\QueueBundle\Worker;
 
+use Bezb\QueueBundle\Event\QueueJobEvent;
+use Bezb\QueueBundle\Event\QueueWorkerEvent;
+use Bezb\QueueBundle\Events;
 use Bezb\QueueBundle\JobInterface;
+use Bezb\QueueBundle\Queue\QueueInterface;
 use Bezb\QueueBundle\QueueHandler;
 use Bezb\QueueBundle\QueueManager;
 use Bezb\QueueBundle\Worker\ConnectionKeeper\ConnectionKeeperInterface;
 use Symfony\Component\Config\Definition\Exception\Exception;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class Worker
@@ -23,6 +28,11 @@ class Worker
      * @var QueueHandler
      */
     protected $handler;
+
+    /**
+     * @var EventDispatcherInterface
+     */
+    protected $eventDispatcher;
 
     /**
      * @var ConnectionKeeperInterface[]
@@ -45,10 +55,11 @@ class Worker
      * @param QueueHandler $handler
      * @param iterable $connectionKeepers
      */
-    public function __construct(QueueManager $manager, QueueHandler $handler, iterable $connectionKeepers)
+    public function __construct(QueueManager $manager, QueueHandler $handler, EventDispatcherInterface $eventDispatcher, iterable $connectionKeepers)
     {
         $this->manager = $manager;
         $this->handler = $handler;
+        $this->eventDispatcher = $eventDispatcher;
         $this->connectionKeepers = $connectionKeepers;
     }
 
@@ -57,18 +68,34 @@ class Worker
         pcntl_signal(SIGCHLD, [$this, 'signalHandler']);
         pcntl_signal(SIGINT, [$this, 'signalHandler']);
 
+        $connection = $this->manager->getQueue($connectionName);
+
         while ($this->isRunning) {
             // Do not take next tasks while do not get free workers limit
             while (count($this->processes) >= $options->getProcessLimit()) {
+
+                // Dispatch an event
+                $this->eventDispatcher->dispatch(
+                    Events::PROCESS_LIMIT,
+                    new QueueWorkerEvent($connectionName, $queueName, $options)
+                );
+
                 usleep(10000);
                 pcntl_signal_dispatch();
             }
 
-            $job = $this->manager->getConnection($connectionName)->pop($queueName);
+            $job = $connection->pop($queueName);
 
             if ($job) {
+
+                // Dispatch an event
+                $this->eventDispatcher->dispatch(
+                    Events::BEFORE_DO_JOB,
+                    new QueueJobEvent($job, $connectionName, $queueName, $options)
+                );
+
                 // Close active external connections before forking, to prevent their closing when child exits
-                $this->closeConnections($connectionName);
+                $this->closeConnections($connection);
 
                 $this->executeJob($job);
             } else {
@@ -95,7 +122,7 @@ class Worker
             try {
                 $this->handler->handle($job);
             } catch (\Exception $e) {
-                var_dump($e->getMessage());
+                var_dump('Error: ' . $e->getMessage());
             }
 
             exit();
@@ -103,16 +130,16 @@ class Worker
     }
 
     /**
-     * @param $connectionName
+     * @param QueueInterface $queue
      */
-    protected function closeConnections($connectionName)
+    protected function closeConnections(QueueInterface $queue)
     {
         foreach ($this->connectionKeepers as $connectionKeeper) {
             $connectionKeeper->closeConnections();
         }
 
         // Also close active queue connection by the same reason
-        $this->manager->closeConnection($connectionName);
+        $queue->closeConnection();
     }
 
     /**

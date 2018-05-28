@@ -21,7 +21,7 @@ class RedisQueue implements QueueInterface
     /**
      * @var Connection
      */
-    protected $redisManager;
+    protected $connection;
 
     /**
      * @var string
@@ -29,23 +29,16 @@ class RedisQueue implements QueueInterface
     protected $default;
 
     /**
-     * @var mixed
-     */
-    protected $connectionName;
-
-    /**
      * RedisQueue constructor.
-     * @param array $config
-     * @param RedisManager $redisManager
+     * @param string $default
+     * @param Connection $connection
      * @param SerializerInterface $serializer
      */
-    public function __construct(array $config, RedisManager $redisManager, SerializerInterface $serializer)
+    public function __construct(string $default, Connection $connection, SerializerInterface $serializer)
     {
+        $this->default = $default;
         $this->serializer = $serializer;
-        $this->redisManager = $redisManager;
-
-        $this->default = $config['default_queue'];
-        $this->connectionName = $config['connection'];
+        $this->connection = $connection;
     }
 
     /**
@@ -56,7 +49,7 @@ class RedisQueue implements QueueInterface
      */
     public function push(JobInterface $job, $data = null, ?string $queue = null)
     {
-        $this->getClient()->rPush($queue ?: $this->default, $this->serializer->serialize($job));
+        $this->connection->rPush($queue ?: $this->default, $this->serializer->serialize($job));
     }
 
     /**
@@ -65,7 +58,7 @@ class RedisQueue implements QueueInterface
      */
     public function pop(?string $queue = null): ?JobInterface
     {
-        $rawJob = $this->getClient()->lPop($queue ?: $this->default);
+        $rawJob = $this->connection->lPop($queue ?: $this->default);
 
         if (!$rawJob) {
             return null;
@@ -80,11 +73,8 @@ class RedisQueue implements QueueInterface
         return $job;
     }
 
-    /**
-     * @return Connection
-     */
-    protected function getClient(): Connection
+    public function closeConnection()
     {
-        return $this->redisManager->getConnection($this->connectionName);
+        $this->connection->close();
     }
 }

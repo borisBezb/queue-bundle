@@ -12,4 +12,4 @@ services:
         exclude: '../../{Resources}'
 
     Bezb\QueueBundle\Worker\Worker:
-        arguments: ['@Bezb\QueueBundle\QueueManager', '@Bezb\QueueBundle\QueueHandler', !tagged queue.worker.connection_keeper]
+        arguments: ['@Bezb\QueueBundle\QueueManager', '@Bezb\QueueBundle\QueueHandler', '@event_dispatcher', !tagged queue.worker.connection_keeper]

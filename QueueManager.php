@@ -55,7 +55,7 @@ class QueueManager
      * @return QueueInterface
      * @throws \Exception
      */
-    public function getConnection(?string $connection = ''): QueueInterface
+    public function getQueue(?string $connection = ''): QueueInterface
     {
         if (!$connection) {
             $connection = $this->default;
@@ -106,17 +106,7 @@ class QueueManager
      */
     public function dispatch(JobInterface $job)
     {
-        $queue = $this->getConnection($job->getConnection());
+        $queue = $this->getQueue($job->getConnection());
         $queue->push($job, null, $job->getQueue());
-    }
-
-    /**
-     * @param $connection
-     */
-    public function closeConnection($connection)
-    {
-        [$driver, $name] = explode(':', $connection);
-
-        $this->connectors[$driver]->close($this->config[$driver][$name]);
     }
 }

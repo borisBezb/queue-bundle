@@ -22,4 +22,9 @@ interface QueueInterface
      * @return mixed
      */
     public function pop(?string $queue = null): ?JobInterface;
+
+    /**
+     * @return mixed
+     */
+    public function closeConnection();
 }

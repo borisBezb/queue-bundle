@@ -39,12 +39,13 @@ class RedisConnector implements ConnectorInterface
      * @param array $config
      * @param SerializerInterface $serializer
      * @return QueueInterface
+     * @throws \Bezb\RedisBundle\Exception\RedisException
      */
     public function connect(array $config, SerializerInterface $serializer): QueueInterface
     {
         $connection = $this->redisManager->getConnection($config['connection']);
 
-        return new RedisQueue($config, $this->redisManager, $serializer);
+        return new RedisQueue($config['default_queue'], $connection, $serializer);
     }
 
     /**
