@@ -16,8 +16,9 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('bezb_queue')
+        $treeBuilder = new TreeBuilder('bezb_queue');
+
+        $treeBuilder->getRootNode()
             ->children()
                 ->scalarNode('default_connection')
                     ->isRequired()
