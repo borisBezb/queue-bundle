@@ -3,7 +3,7 @@
 namespace Bezb\QueueBundle\Worker\ConnectionKeeper;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * Class DoctrineKeeper
@@ -12,15 +12,15 @@ use Symfony\Bridge\Doctrine\RegistryInterface;
 class DoctrineKeeper implements ConnectionKeeperInterface
 {
     /**
-     * @var RegistryInterface
+     * @var ManagerRegistry
      */
     protected $doctrine;
 
     /**
      * DoctrineKeeper constructor.
-     * @param RegistryInterface $doctrine
+     * @param ManagerRegistry $doctrine
      */
-    public function __construct(RegistryInterface $doctrine)
+    public function __construct(ManagerRegistry $doctrine)
     {
         $this->doctrine = $doctrine;
     }

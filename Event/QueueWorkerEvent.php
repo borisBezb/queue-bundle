@@ -3,7 +3,7 @@
 namespace Bezb\QueueBundle\Event;
 
 use Bezb\QueueBundle\Worker\WorkerOptions;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 /**
  * Class QueueWorkerEvent
